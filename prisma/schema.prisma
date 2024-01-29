@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ตาราง ผู้ใช้
+model Users {
+  id               Int       @id @default(autoincrement())
+  username         String    @unique
+  password         String
+  email            String    @unique
+  otheruserdetails String
+  bookings         Booking[]
+}
+
+//ตาราง การจอง
+model Booking {
+  id              Int       @id @default(autoincrement())
+  user            Users     @relation(fields: [userId], references: [id])
+  userId          Int       @map("user_id")
+  showtime        Showtimes @relation(fields: [showtimeId], references: [id])
+  showtimeId      Int       @map("showtime_id")
+  movie           Movie     @relation(fields: [movieId], references: [id])
+  movieId         Int       @map("movie_id")
+  numberoftickets Int
+  bookingdate     DateTime
+  price           Int
+  Tickets         Tickets[]
+  Payment         Payment[]
+}
+
+//ตาราง ตั๋ว
+model Tickets {
+  id          Int     @id @default(autoincrement())
+  booking     Booking @relation(fields: [bookingId], references: [id])
+  bookingId   Int     @map("booking_id")
+  seatnumber  Int
+  tickrtprice Int
+}
+
+//ตาราง การชำระเงิน
+model Payment {
+  id          Int      @id @default(autoincrement())
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  bookingId   Int      @map("booking_id")
+  amount      Int
+  paymentdate DateTime
+}
+
+//ตาราง ที่นั่ง
+model Seat {
+  id          Int       @id @default(autoincrement())
+  showtime    Showtimes @relation(fields: [showtimeId], references: [id])
+  showtimeId  Int       @map("showtime_id")
+  bookingdate Int
+  number      Int
+  price       Int
+}
+
+//ตาราง รอบฉาย
+model Showtimes {
+  id        Int       @id @default(autoincrement())
+  movie     Movie     @relation(fields: [movieId], references: [id])
+  movieId   Int       @map("movie_id")
+  theaterid String
+  starttime DateTime
+  endtime   DateTime
+  Booking   Booking[]
+  Seat      Seat[]
+}
+
+//ตาราง ภาพยนตร์
+model Movie {
+  id          Int         @id @default(autoincrement())
+  title       String
+  genre       String
+  releasedate DateTime
+  duration    String
+  Booking     Booking[]
+  Showtimes   Showtimes[]
+}
